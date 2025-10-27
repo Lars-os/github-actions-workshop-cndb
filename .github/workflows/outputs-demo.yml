@@ -6,6 +6,10 @@ jobs:
   info: 
     name: create info
     runs-on: ubuntu-latest
+    outputs:
+      commit-sha: ${{ steps.commit.outputs.sha }}
+      branch-name: ${{ steps.branch.outputs.name }}
+      commit-message: ${{ steps.message.outputs.text }}
     steps:
       # Remember we have to check out the repository first!
       - name: Checkout repository
@@ -31,6 +35,8 @@ jobs:
     needs: info
     name: Build Project
     runs-on: ubuntu-latest
+    outputs:
+      build-report: ${{ steps.report.outputs.content }}
     steps:
       # Remember we have to check out the repository first!
       - name: Checkout repository
@@ -41,7 +47,7 @@ jobs:
         run: npm ci
 
       - name: print info about build
-        run: echo "Building commit ${{ needs.info.outputs.sha }} on branch ${{ needs.info.outputs.branch }}"
+        run: echo "Building commit ${{ needs.info.outputs.commit-sha }} on branch ${{ needs.info.outputs.branch-name }}"
 
       - name: Build
         run: npm run build
@@ -67,9 +73,9 @@ jobs:
       - name: Display summary
         run: |
           echo "=== Workflow Summary ==="
-          echo "Commit SHA: ${{ needs.info.outputs.sha }}"
-          echo "Branch: ${{ needs.info.outputs.branch }}"
-          echo "Message: ${{ needs.info.outputs.commit }}"
+          echo "Commit SHA: ${{ needs.info.outputs.commit-sha }}"
+          echo "Branch: ${{ needs.info.outputs.branch-name }}"
+          echo "Message: ${{ needs.info.outputs.commit-message }}"
           echo ""
           echo "${{ needs.build.outputs.build-report }}"
 
