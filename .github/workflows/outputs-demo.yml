@@ -1,0 +1,76 @@
+name: demo workflow for outputs
+
+on: push
+
+jobs:
+  info: 
+    name: create info
+    runs-on: ubuntu-latest
+    steps:
+      # Remember we have to check out the repository first!
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Get commit SHA
+        id: commit
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Get current branch name
+        run: |
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Get current git commit
+        run: |
+          COMMIT=$(git log -1 --pretty=%B)
+          echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+
+  build:
+    needs: info
+    name: Build Project
+    runs-on: ubuntu-latest
+    steps:
+      # Remember we have to check out the repository first!
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # This step installs the dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      - name: print info about build
+        run: echo "Building commit ${{ needs.info.outputs.sha }} on branch ${{ needs.info.outputs.branch }}"
+
+      - name: Build
+        run: npm run build
+
+      - name: Generate build report
+        id: report
+        run: |
+          {
+            echo "content<<EOF"
+            echo "Build Report"
+            echo "============"
+            echo "Node.js: $(node --version)"
+            echo "npm: $(npm --version)"
+            echo "Status: SUCCESS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+  summary:
+    name: print summary
+    needs: [build, info]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display summary
+        run: |
+          echo "=== Workflow Summary ==="
+          echo "Commit SHA: ${{ needs.info.outputs.sha }}"
+          echo "Branch: ${{ needs.info.outputs.branch }}"
+          echo "Message: ${{ needs.info.outputs.commit }}"
+          echo ""
+          echo "${{ needs.build.outputs.build-report }}"
+
+
