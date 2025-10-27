@@ -22,11 +22,13 @@ jobs:
           echo "sha=$SHA" >> $GITHUB_OUTPUT
 
       - name: Get current branch name
+        id: branch
         run: |
           BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
       - name: Get current git commit
+        id: message
         run: |
           COMMIT=$(git log -1 --pretty=%B)
           echo "commit=$COMMIT" >> $GITHUB_OUTPUT
