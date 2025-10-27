@@ -41,6 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-current
+          path: coverage-main.txt
 
   comment:
     needs:
